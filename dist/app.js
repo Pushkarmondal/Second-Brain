@@ -102,10 +102,58 @@ app.post('/api/v1/content', middleware_1.middleware, (req, res) => __awaiter(voi
         res.status(500).json({ message: 'Internal server error' });
     }
 }));
-app.get('/api/v1/getcontent', (req, res) => {
-});
-app.delete('/api/v1/deletecontent', (req, res) => {
-});
+app.get('/api/v1/getcontent', middleware_1.middleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // @ts-ignore
+        const userId = req.userId;
+        const content = yield prisma.content.findMany({
+            where: { userId },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true
+                    }
+                }
+            }
+        });
+        if (content.length === 0) {
+            res.status(404).json({ message: 'No content found' });
+            return;
+        }
+        res.status(200).json({ content });
+        console.log(content);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
+app.delete('/api/v1/deletecontent', middleware_1.middleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // @ts-ignore
+        const authorization = req.userId;
+        const contentId = req.body.contentId; // spelling fixed
+        const deletedContent = yield prisma.content.deleteMany({
+            where: {
+                id: contentId,
+                user: {
+                    id: authorization
+                }
+            }
+        });
+        console.log(deletedContent);
+        if (deletedContent.count === 0) {
+            res.status(404).json({ message: 'Content not found or unauthorized' });
+            return;
+        }
+        res.status(200).json({ message: 'Content deleted successfully' });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
