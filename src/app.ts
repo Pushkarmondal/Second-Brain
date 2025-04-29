@@ -196,6 +196,14 @@ app.get("/api/v1/:shareLink", async (req, res) => {
             const content = await prisma.content.findMany({
                   where: {
                         userId: link.userId
+                  },
+                  include: {
+                        user: {
+                              select: {
+                                    id: false,
+                                    username: true
+                              }
+                        }
                   }
             })
             if (!content) {
@@ -207,7 +215,7 @@ app.get("/api/v1/:shareLink", async (req, res) => {
 
             const user = await prisma.user.findUnique({
                   where: {
-                        id: link.userId
+                        id: link.userId,
                   }
             })
             if (!user) {
@@ -217,8 +225,7 @@ app.get("/api/v1/:shareLink", async (req, res) => {
             }
             res.status(200).json({
                   message: 'Link found',
-                  content,
-                  user
+                  content
             })
 
       } catch (error) {
