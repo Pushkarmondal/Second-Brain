@@ -18,6 +18,7 @@ const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("./config");
 const middleware_1 = require("./middleware");
+const links_1 = require("./links");
 const PORT = 3009;
 const prisma = new client_1.PrismaClient();
 const app = (0, express_1.default)();
@@ -148,6 +149,80 @@ app.delete('/api/v1/deletecontent', middleware_1.middleware, (req, res) => __awa
             return;
         }
         res.status(200).json({ message: 'Content deleted successfully' });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
+app.post("/api/v1/share", middleware_1.middleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { share } = req.body;
+        // @ts-ignore
+        const authorization = req.userId;
+        if (share) {
+            const linkShare = yield prisma.link.create({
+                data: {
+                    user: { connect: { id: authorization } },
+                    hash: (0, links_1.generateRandomHash)(20)
+                }
+            });
+            // console.log(linkShare);
+            res.status(201).json({ message: 'Link created successfully', link: linkShare });
+        }
+        else {
+            yield prisma.link.delete({
+                where: {
+                    userId: authorization
+                }
+            });
+        }
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}));
+app.get("/api/v1/:shareLink", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const hash = req.params.shareLink;
+        const link = yield prisma.link.findUnique({
+            where: {
+                hash
+            }
+        });
+        if (!link) {
+            res.status(411).json({
+                message: 'Link not found'
+            });
+            return;
+        }
+        const content = yield prisma.content.findMany({
+            where: {
+                userId: link.userId
+            }
+        });
+        if (!content) {
+            res.status(411).json({
+                message: 'No content found'
+            });
+            return;
+        }
+        const user = yield prisma.user.findUnique({
+            where: {
+                id: link.userId
+            }
+        });
+        if (!user) {
+            res.status(411).json({
+                message: "No user Found with this link"
+            });
+        }
+        res.status(200).json({
+            message: 'Link found',
+            content,
+            user
+        });
     }
     catch (error) {
         console.error(error);
