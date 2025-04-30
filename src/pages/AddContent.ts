@@ -1,0 +1,1 @@
+export const ADD_CONTENT_URL = "http://localhost:3009/api/v1/content"

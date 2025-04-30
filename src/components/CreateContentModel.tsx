@@ -1,7 +1,12 @@
 import { Cross } from "../icons/Cross";
 import { InputBox } from "./InputBox";
 
-export function CreateContentModel({ open, onClose }) {
+interface CreateContentModelProps {
+      open: boolean;
+      onClose: () => void;
+}
+
+export function CreateContentModel({ open, onClose }: CreateContentModelProps) {
       return (
             <div>
                   {open && (
@@ -9,12 +14,12 @@ export function CreateContentModel({ open, onClose }) {
                               <div className="relative bg-white rounded-lg shadow-lg w-[500px] p-6">
                                     <button
                                           onClick={onClose}
-                                          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+                                          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer">
                                           <Cross />
                                     </button>
                                     <h2 className="text-lg font-semibold text-center mb-6">Create Content</h2>
                                     <div>
-                                          <InputBox />
+                                          <InputBox onClose={onClose} />
                                     </div>
                               </div>
                         </div>
