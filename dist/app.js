@@ -23,6 +23,8 @@ const PORT = 3009;
 const prisma = new client_1.PrismaClient();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
+const cors_1 = __importDefault(require("cors"));
+app.use((0, cors_1.default)());
 const signupSchema = zod_1.z.object({
     username: zod_1.z.string().min(1, { message: 'Username is required' }).max(20, { message: 'Username is too long' }),
     password: zod_1.z.string().min(8, { message: 'Password must be at least 8 characters' })
