@@ -173,11 +173,13 @@ app.post("/api/v1/share", middleware_1.middleware, (req, res) => __awaiter(void 
             res.status(201).json({ message: 'Link created successfully', link: linkShare });
         }
         else {
-            yield prisma.link.delete({
+            yield prisma.link.deleteMany({
                 where: {
                     userId: authorization
                 }
             });
+            res.status(200).json({ message: "Link deleted successfully" });
+            return;
         }
     }
     catch (error) {
