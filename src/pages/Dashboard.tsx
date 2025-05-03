@@ -9,9 +9,35 @@ import { GetContent } from "../hooks/GetContent"
 import axios from "axios"
 import { SHARE_URL } from "./BackendUrl"
 
+interface Content  {
+      title: string;
+      link: string;
+      type: string;
+};
+
 export function Dashboard() {
       const [modelOpen, setModelOpen] = useState(false);
+      const [searchQuery, setSearchQuery] = useState('');
+      const [debouncequery, setDebounceQuery] = useState('');
       const { contents, handleContentChange } = GetContent();
+
+      useEffect(() => {
+            const handler = setTimeout(() => {
+                  setDebounceQuery(searchQuery);
+            }, 700)
+            return () => {
+                  clearTimeout(handler);
+            }
+      }, [searchQuery])
+
+      const filteredContents = contents.filter(({ title }) => {
+            try {
+                  const regex = new RegExp(debouncequery, "i");
+                  return regex.test(title);
+            } catch (err) {
+                  return title.toLowerCase().includes(debouncequery.toLowerCase());
+            }
+      });
 
       useEffect(() => {
             handleContentChange();
@@ -24,7 +50,7 @@ export function Dashboard() {
                         <CreateContentModel open={modelOpen} onClose={() => {
                               setModelOpen(false);
                         }} />
-                        <div className="flex justify-end mr-20 mt-4 justify-center items-center gap-x-4">
+                        <div className="flex justify-end mr-10 mt-4 justify-center items-center gap-x-4">
                               <div className="font-normal text-4xl text-indigo-400 mr-188 hover:text-slate-600">
                                     <p>All Notes -&gt;</p>
                               </div>
@@ -72,12 +98,25 @@ export function Dashboard() {
                               />
 
                         </div>
-                        <div className="flex mt-10 ml-35 max-h-150 overflow-y-auto flex-wrap grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                              {contents.map(({ type, link, title }) => <Card key={link} title={title} link={link} contentType={type} />)}
-                              {/* <Card title="CICD Tweet" link="https://x.com/pushkarmondal79/status/1871167395731226726" contentType="twitter" />
-                              <Card title="Youtube Videos" link="https://www.youtube.com/watch?v=vsWxs1tuwDk" contentType="youtube" />
-                              <Card title="Article" link="https://docs.gitlab.com/ci/" contentType="article" /> */}
+                        <div className=" flex p-4 max-w-md mx-auto gap-1 items-end">
+                              <input type="text" placeholder="Search..." className="w-full px-3 py-2 border rounded-md shadow-lg shadow-slate-500/50"
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                              />
+                              <button onClick={() => {
+                                    // optional: you could add more logic here later
+                                    console.log("Search executed with query:", searchQuery);
+                              }} className=" h-10 w-20 cursor-pointer bg-indigo-400 font-normal text-white rounded-md items-center px-3 border shadow-xl">Enter</button>
                         </div>
+                        
+                        <div className="flex mt-10 ml-35 max-h-150 overflow-y-auto flex-wrap grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                              {filteredContents.length === 0 ? (
+                                          <p className="text-gray-500">No results found</p>) : (
+                              filteredContents.map(({type, link, title}, index) => (
+                                    <Card key={`${link}-${index}`} title={title} link={link} contentType={type} />
+                              ))
+                              )}
+                        </div>
+
                   </div>
             </div>
 
