@@ -13,8 +13,6 @@ app.use(express.json());
 import cors from 'cors';
 app.use(cors());
 
-
-
 const signupSchema = z.object({
       username: z.string().min(1, { message: 'Username is required' }).max(20, { message: 'Username is too long' }),
       password: z.string().min(8, { message: 'Password must be at least 8 characters' })

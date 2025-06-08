@@ -35,5 +35,5 @@ model Link {
 model Tag {
   id       Int       @id @default(autoincrement())
   name     String
-  contents Content[] 
+  contents Content[]
 }
